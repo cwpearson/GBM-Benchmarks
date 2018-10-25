@@ -13,12 +13,13 @@ rm -rf xgboost
 git clone https://github.com/dmlc/xgboost.git --recursive
 cd xgboost
 git checkout ${xgboost_commit}
+git submodule update --init --remote
 mkdir build && cd build
 cmake .. -DUSE_CUDA=ON -DUSE_NCCL=ON
 make -j4
 cd ..
 cd python-package/
-python setup.py install --user
+python setup.py install
 cd ../..
 
 # Catboost
@@ -27,16 +28,17 @@ git clone https://github.com/catboost/catboost.git
 cd catboost
 git checkout ${catboost_commit}
 cd catboost/python-package/catboost
-../../../ya make -r -DUSE_ARCADIA_PYTHON=no -DOS_SDK=local -DPYTHON_CONFIG=/usr/bin/python${pyver}-config -DCUDA_ROOT=$(dirname $(dirname $(which nvcc)))
+../../../ya make -r -DUSE_ARCADIA_PYTHON=no -DOS_SDK=local -DCUDA_ROOT=$(dirname $(dirname $(which nvcc)))
 cd ../../../..
 
 # LightGBM
 rm -rf LightGBM
 git clone --recursive https://github.com/Microsoft/LightGBM ; cd LightGBM
 git checkout ${lightgbm_commit}
+git submodule update --init --remote
 mkdir build ; cd build
-cmake -DUSE_GPU=1 ..
+cmake -DUSE_GPU=1 -DOpenCL_INCLUDE_DIR=/usr/local/cuda/include .. 
 make -j$(nproc)
 cd ../python-package
-python setup.py install --precompile --user
+python setup.py install --precompile
 cd ..
